@@ -36,6 +36,7 @@ const usePendingFunction = (func, msDelay) => {
       setIsPending(true);
       setMemoStarter((prev) => !prev);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingStarter]);
 
   // 지연로딩된 deferredMemoStarter가 동작하면, 함수를 실행한다.
@@ -59,6 +60,7 @@ const usePendingFunction = (func, msDelay) => {
       setPendingEnder((prev) => !prev);
       return result;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deferredMemoStarter]);
 
   // pendingEnder가 동작하면, isPending를 false로 변경한다.
@@ -66,6 +68,7 @@ const usePendingFunction = (func, msDelay) => {
     if (isPending) {
       setTimeout(() => setIsPending(false), msDelay);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingEnder, msDelay]);
 
   // startFunc으로 함수를 실행하고, isPending으로 대기상태를 확인하고, memoValue로 결과를 확인할 수 있다.
