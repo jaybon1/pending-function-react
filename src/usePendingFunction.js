@@ -40,6 +40,9 @@ const usePendingFunction = (func, msDelay = undefined) => {
   // memoStarter를 지연로딩하기 위해 deferredMemoStarter를 사용한다.
   const deferredMemoStarter = useDeferredValue(memoStarter);
 
+  // pending 상태 동안 입력이 있는지 체크하기 위한 변수
+  const [pendingInput, setPendingInput] = useState(0);
+
   // 매개변수로 받은 함수 실행을 위해 리턴할 함수
   const startFunc = () => setPenidngStarter(get_random());
 
@@ -50,7 +53,10 @@ const usePendingFunction = (func, msDelay = undefined) => {
       setMemoStarter(get_random());
     } else if (!isPending) {
       setIsPending(true);
+      setPendingInput(0);
       setMemoStarter(get_random());
+    } else {
+      setPendingInput((prev) => prev + 1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingStarter]);
@@ -80,10 +86,21 @@ const usePendingFunction = (func, msDelay = undefined) => {
   // pendingEnder가 동작하면, isPending를 false로 변경한다.
   useEffect(() => {
     if (isPending) {
-      setTimeout(() => setIsPending(false), msDelay);
+      setTimeout(() => {
+        setIsPending(false);
+      }, msDelay);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingEnder]);
+
+  // pending 동안 입력이 있으면 다시 입력받은 함수를 실행한다.
+  useEffect(() => {
+    if (!isPending && pendingInput > 0) {
+      setPendingInput(0);
+      setPenidngStarter(get_random());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPending]);
 
   // startFunc으로 함수를 실행하고, isPending으로 대기상태를 확인하고, memoValue로 결과를 확인할 수 있다.
   return [isPending, startFunc, memoValue];
