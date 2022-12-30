@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 
 /**
  * 함수를 실행하고, 대기 상태 및 결과를 반환하는 Hook.
@@ -14,15 +8,14 @@ import {
  * 스타터나 엔더를 동작시킬때 !boolean을 사용하지 않는 이유는, 가끔 작동하지 않는 경우가 있기 때문이다.
  * @param {Function} func 실행할 함수
  * @param {number} msDelay 함수 실행 지연 시간
- * @returns {Array} [isPending, startFunc, memoValue]
- * @type { (func: Function, msDelay : number | undefined) => [boolean, Function, any] } usePendingFunction
+ * @returns {Array} [startFunc, isPending, memoValue]
+ * @type { (func: Function, msDelay : number | undefined) => [Function, boolean, any] } usePendingFunction
  */
 const usePendingFunction = (func, msDelay = undefined) => {
-  // 난수 생성 함수
-  // 트리거 용도로 사용한다.
-  const get_random = useCallback(() => {
-    return Date.now() + Math.random();
-  }, []);
+  // state들을 동작시키기 위한 트리거
+  const get_num = (prev) => {
+    return parseInt(prev + 1);
+  };
 
   // 함수가 실행되고 있는지 여부
   const [isPending, setIsPending] = useState(false);
@@ -44,19 +37,19 @@ const usePendingFunction = (func, msDelay = undefined) => {
   const [pendingInput, setPendingInput] = useState(0);
 
   // 매개변수로 받은 함수 실행을 위해 리턴할 함수
-  const startFunc = () => setPenidngStarter(get_random());
+  const startFunc = () => setPenidngStarter(get_num);
 
-  // 처음 실행될 때, memoStarter를 난수로 변경한다.
+  // 처음 실행될 때, memoStarter를 0으로 변경한다.
   // pendingStarter가 동작하면, isPending를 true로 변경하고, memoStarter를 동작시킨다.
   useEffect(() => {
     if (memoStarter === undefined) {
-      setMemoStarter(get_random());
+      setMemoStarter(0);
     } else if (!isPending) {
       setIsPending(true);
       setPendingInput(0);
-      setMemoStarter(get_random());
+      setMemoStarter(get_num);
     } else {
-      setPendingInput((prev) => prev + 1);
+      setPendingInput(get_num);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingStarter]);
@@ -73,11 +66,11 @@ const usePendingFunction = (func, msDelay = undefined) => {
     const result = func();
     if (result instanceof Promise) {
       result.finally(() => {
-        setPendingEnder(get_random());
+        setPendingEnder(get_num);
       });
       return undefined;
     } else {
-      setPendingEnder(get_random());
+      setPendingEnder(get_num);
       return result;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,13 +90,13 @@ const usePendingFunction = (func, msDelay = undefined) => {
   useEffect(() => {
     if (!isPending && pendingInput > 0) {
       setPendingInput(0);
-      setPenidngStarter(get_random());
+      setPenidngStarter(get_num);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPending]);
 
   // startFunc으로 함수를 실행하고, isPending으로 대기상태를 확인하고, memoValue로 결과를 확인할 수 있다.
-  return [isPending, startFunc, memoValue];
+  return [startFunc, isPending, memoValue];
 };
 
 export default usePendingFunction;
