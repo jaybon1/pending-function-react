@@ -7,7 +7,7 @@ import {
 } from "react";
 
 /**
- * 함수를 실행하고, 대기 상태 및 결과를 반환하는 Hook
+ * 함수를 실행하고, 대기 상태 및 결과를 반환하는 Hook.
  * 성능 최적화를 위해 지연로딩을 사용한다.
  * memoValue는 리턴이 있는 동기함수에만 적용된다.
  * 비동기함수는 async 비동기 작업에 await를 꼭 사용해서 함수를 매개변수로 넘겨야 한다. (그러지 않으면 바로 리턴되기 때문에 대기 상태가 되지 않는다.)
@@ -15,9 +15,9 @@ import {
  * @param {Function} func 실행할 함수
  * @param {number} msDelay 함수 실행 지연 시간
  * @returns {Array} [isPending, startFunc, memoValue]
- * @type { (func: Function, msDelay : number | undefined) => [boolean, Function, any] } usePendingState
+ * @type { (func: Function, msDelay : number | undefined) => [boolean, Function, any] } usePendingFunction
  */
-const usePendingFunction = (func, msDelay) => {
+const usePendingFunction = (func, msDelay = undefined) => {
   // 난수 생성 함수
   // 트리거 용도로 사용한다.
   const get_random = useCallback(() => {
@@ -79,7 +79,9 @@ const usePendingFunction = (func, msDelay) => {
 
   // pendingEnder가 동작하면, isPending를 false로 변경한다.
   useEffect(() => {
-    setTimeout(() => setIsPending(false), msDelay);
+    if (isPending) {
+      setTimeout(() => setIsPending(false), msDelay);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingEnder]);
 
