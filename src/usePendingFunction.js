@@ -3,12 +3,12 @@ import { useDeferredValue, useEffect, useMemo, useState } from "react";
 /**
  * 함수를 실행하고, 대기 상태 및 결과를 반환하는 Hook.
  * 성능 최적화를 위해 지연로딩을 사용한다.
- * memoValue는 리턴이 있는 동기함수에만 적용된다.
+ * result는 리턴이 있는 동기함수에만 적용된다.
  * 비동기함수는 async 비동기 작업에 await를 꼭 사용해서 함수를 매개변수로 넘겨야 한다. (그러지 않으면 바로 리턴되기 때문에 대기 상태가 되지 않는다.)
- * 스타터나 엔더를 동작시킬때 !boolean을 사용하지 않는 이유는, 가끔 작동하지 않는 경우가 있기 때문이다.
+ * 스타터나 엔더를 동작시킬때 !boolean을 사용하지 않는 이유는, 작동하지 않는 경우가 있기 때문이다.
  * @param {Function} func 실행할 함수
  * @param {number} msDelay 함수 실행 지연 시간
- * @returns {Array} [startFunc, isPending, memoValue]
+ * @returns {Array} [trigger, isPending, result]
  * @type { (func: Function, msDelay : number | undefined) => [Function, boolean, any] } usePendingFunction
  */
 const usePendingFunction = (func, msDelay = undefined) => {
@@ -21,7 +21,7 @@ const usePendingFunction = (func, msDelay = undefined) => {
   const [isPending, setIsPending] = useState(false);
 
   // 대기 상태 시작 트리거
-  const [pendingStarter, setPenidngStarter] = useState(0);
+  const [pendingStarter, setPendingStarter] = useState(0);
   // 대기 상태 종료 트리거
   const [pendingEnder, setPendingEnder] = useState(0);
 
@@ -36,8 +36,8 @@ const usePendingFunction = (func, msDelay = undefined) => {
   // pending 상태 동안 입력이 있는지 체크하기 위한 변수
   const [pendingInput, setPendingInput] = useState(0);
 
-  // 매개변수로 받은 함수 실행을 위해 리턴할 함수
-  const startFunc = () => setPenidngStarter(get_num());
+  // 매개변수로 받은 함수 실행을 위해 리턴할 트리거 함수
+  const trigger = () => setPendingStarter(get_num());
 
   // 처음 실행될 때, memoStarter를 0으로 변경한다.
   // pendingStarter가 동작하면, isPending를 true로 변경하고, memoStarter를 동작시킨다.
@@ -58,7 +58,7 @@ const usePendingFunction = (func, msDelay = undefined) => {
   // pending 상태가 아닐 경우, 함수를 실행하지 않는다.
   // func 매개변수가 함수가 아닐 경우, 에러를 발생시킨다.
   // 함수가 완료되면 pendingEnder를 동작시킨다.
-  const memoValue = useMemo(() => {
+  const result = useMemo(() => {
     if (!isPending) return undefined;
     if (!(typeof func === "function")) {
       throw new Error("func must be a function");
@@ -90,13 +90,13 @@ const usePendingFunction = (func, msDelay = undefined) => {
   useEffect(() => {
     if (!isPending && pendingInput > 0) {
       setPendingInput(0);
-      setPenidngStarter(get_num());
+      setPendingStarter(get_num());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPending]);
 
-  // startFunc으로 함수를 실행하고, isPending으로 대기상태를 확인하고, memoValue로 결과를 확인할 수 있다.
-  return [startFunc, isPending, memoValue];
+  // startFunc으로 함수를 실행하고, isPending으로 대기상태를 확인하고, result로 결과를 확인할 수 있다.
+  return [trigger, isPending, result];
 };
 
 export default usePendingFunction;
